@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A responsive calculator with history and keyboard support, built with HTML, CSS and JavaScript.">
+  <title>Calculator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%AE%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+  <div class="bg-orbs" aria-hidden="true"><span></span><span></span></div>
+
+  <main class="layout">
+    <section class="calc" aria-label="Calculator">
+      <div class="calc-top">
+        <span class="title">Calculator</span>
+        <button id="themeBtn" class="icon-btn" type="button" aria-label="Toggle light and dark theme">
+          <svg class="sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+      </div>
+
+      <div class="screen">
+        <div id="expression" class="expression" aria-hidden="true">&nbsp;</div>
+        <div id="display" class="display" role="status" aria-live="polite" aria-atomic="true">0</div>
+        <button id="copyBtn" class="copy" type="button" aria-label="Copy result">Copy</button>
+      </div>
+
+      <div class="keys" id="keys">
+        <button class="key fn" data-action="clear">AC</button>
+        <button class="key fn" data-action="sign" aria-label="Toggle positive or negative">+/&minus;</button>
+        <button class="key fn" data-action="percent" aria-label="Percent">%</button>
+        <button class="key op" data-op="/" aria-label="Divide">&divide;</button>
+
+        <button class="key" data-num="7">7</button>
+        <button class="key" data-num="8">8</button>
+        <button class="key" data-num="9">9</button>
+        <button class="key op" data-op="*" aria-label="Multiply">&times;</button>
+
+        <button class="key" data-num="4">4</button>
+        <button class="key" data-num="5">5</button>
+        <button class="key" data-num="6">6</button>
+        <button class="key op" data-op="-" aria-label="Subtract">&minus;</button>
+
+        <button class="key" data-num="1">1</button>
+        <button class="key" data-num="2">2</button>
+        <button class="key" data-num="3">3</button>
+        <button class="key op" data-op="+" aria-label="Add">+</button>
+
+        <button class="key" data-action="delete" aria-label="Delete last digit">&#9003;</button>
+        <button class="key" data-num="0">0</button>
+        <button class="key" data-action="dot" aria-label="Decimal point">.</button>
+        <button class="key eq" data-action="equals" aria-label="Equals">=</button>
+      </div>
+    </section>
+
+    <aside class="history" aria-labelledby="histTitle">
+      <div class="hist-head">
+        <h2 id="histTitle">History</h2>
+        <button id="clearHistory" class="link" type="button" disabled>Clear</button>
+      </div>
+      <p id="histEmpty" class="hist-empty">Your calculations will appear here.</p>
+      <ul id="histList" class="hist-list"></ul>
+      <p class="hint">Keyboard: digits, <kbd>+</kbd> <kbd>-</kbd> <kbd>*</kbd> <kbd>/</kbd>, <kbd>Enter</kbd>, <kbd>Backspace</kbd>, <kbd>Esc</kbd></p>
+    </aside>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

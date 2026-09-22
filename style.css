@@ -87,3 +87,7 @@ kbd { background: var(--line); color: var(--ink); border-radius: .35rem; padding
   .layout { grid-template-columns: 1fr; max-width: 360px; margin: 0 auto; }
   .history { max-height: 320px; }
 }
+
+/* ---- Backend integration additions ---- */
+.api-note { margin: 1rem 0 0; font-size: .72rem; color: var(--muted); line-height: 1.6; }
+.api-error { margin: 0 0 .6rem; padding: .55rem .7rem; border-radius: .6rem; background: color-mix(in srgb, #e0574a 15%, transparent); color: #e0574a; font-size: .8rem; }

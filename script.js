@@ -3,30 +3,56 @@ const displayEl = $("display");
 const expressionEl = $("expression");
 const histList = $("histList");
 const histEmpty = $("histEmpty");
+const apiError = $("apiError");
 const clearHistoryBtn = $("clearHistory");
 const opButtons = document.querySelectorAll(".key.op");
 
 const SYMBOLS = { "+": "+", "-": "−", "*": "×", "/": "÷" };
-const HISTORY_KEY = "calc-history-v1";
-const MAX_HISTORY = 30;
+const API_URL = "/api/history";
 
 let current = "0";        // number being typed / last result
 let previous = null;      // left-hand operand
 let operator = null;      // pending operator
 let startNew = false;     // next digit starts a fresh number
-let history = loadHistory();
+let history = [];         // loaded from the server
+let historyLoaded = false;
 
-/* ---------- history storage ---------- */
-function loadHistory() {
+/* ---------- history storage (real backend: MongoDB via /api/history) ---------- */
+async function api(path, options) {
+  const res = await fetch(path, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...(options && options.headers) },
+  });
+  let body = null;
   try {
-    const parsed = JSON.parse(localStorage.getItem(HISTORY_KEY));
-    return Array.isArray(parsed) ? parsed : [];
+    body = await res.json();
   } catch {
-    return [];
+    /* no body */
   }
+  if (!res.ok) throw new Error((body && body.error) || `Request failed (${res.status})`);
+  return body;
 }
-function saveHistory() {
-  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch { /* storage may be unavailable */ }
+
+function showApiError(message) {
+  apiError.textContent = message;
+  apiError.hidden = false;
+}
+function clearApiError() {
+  apiError.hidden = true;
+  apiError.textContent = "";
+}
+
+async function loadHistory() {
+  try {
+    const data = await api(API_URL);
+    history = data.history;
+    clearApiError();
+  } catch (err) {
+    showApiError("Could not load history. The API or database may be unreachable.");
+    console.error(err);
+  }
+  historyLoaded = true;
+  renderHistory();
 }
 
 /* ---------- formatting ---------- */
@@ -146,11 +172,22 @@ function toggleSign() {
 }
 
 /* ---------- history ---------- */
-function addHistory(exp, result) {
+async function addHistory(exp, result) {
   if (result === "Error") return;
-  history.unshift({ exp, result });
-  history = history.slice(0, MAX_HISTORY);
-  saveHistory();
+  // optimistic: show it immediately, then reconcile with the server's copy (real id, trimmed length)
+  const optimisticId = `pending-${Date.now()}`;
+  history.unshift({ id: optimisticId, exp, result });
+  renderHistory();
+  try {
+    const data = await api(API_URL, { method: "POST", body: JSON.stringify({ exp, result }) });
+    const idx = history.findIndex((h) => h.id === optimisticId);
+    if (idx !== -1) history[idx] = data.entry;
+    clearApiError();
+  } catch (err) {
+    history = history.filter((h) => h.id !== optimisticId);
+    showApiError("Could not save that calculation to history.");
+    console.error(err);
+  }
   renderHistory();
 }
 
@@ -179,6 +216,7 @@ function renderHistory() {
     histList.appendChild(li);
   });
   histEmpty.hidden = history.length > 0;
+  histEmpty.textContent = historyLoaded ? "Your calculations will appear here." : "Loading history...";
   clearHistoryBtn.disabled = history.length === 0;
 }
 
@@ -211,10 +249,19 @@ document.addEventListener("keydown", (event) => {
   else if (k === "%") percent();
 });
 
-clearHistoryBtn.addEventListener("click", () => {
+clearHistoryBtn.addEventListener("click", async () => {
+  const previousHistory = history;
   history = [];
-  saveHistory();
   renderHistory();
+  try {
+    await api(API_URL, { method: "DELETE" });
+    clearApiError();
+  } catch (err) {
+    history = previousHistory;
+    showApiError("Could not clear history.");
+    renderHistory();
+    console.error(err);
+  }
 });
 
 $("copyBtn").addEventListener("click", async () => {
@@ -236,3 +283,4 @@ $("themeBtn").addEventListener("click", () => {
 
 renderHistory();
 updateScreen();
+loadHistory();
